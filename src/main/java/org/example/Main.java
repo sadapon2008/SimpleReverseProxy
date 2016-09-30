@@ -21,17 +21,17 @@ public class Main {
 	private static void printUsage() {
 		System.out.println("usage: simple_reverse_proxy target_url port");
 	}
-	
+
 	public static void main(String[] args) {
 		if (args.length < 2) {
 			printUsage();
 			System.exit(1);
 		}
-		
+
 		try {
 			String argTargetUrl = args[0];
 			int argPort = Integer.parseInt(args[1]);
-		
+
 			Server server = new Server(argPort);
 			ServletContextHandler contextHandler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
 			contextHandler.setContextPath("/");
@@ -39,12 +39,12 @@ public class Main {
 
 			contextHandler.addServlet(new ServletHolder(new AsyncProxyServlet(){
 				private String targetUrl;
-				
+
 				public AsyncProxyServlet setTargetUrl(String s) {
 					this.targetUrl = s;
 					return this;
 				}
-				
+
 				@Override
 				protected HttpClient createHttpClient() throws ServletException
 				{
@@ -74,55 +74,55 @@ public class Main {
 						executor=qtp;
 					}
 
-		            client.setExecutor(executor);
+					client.setExecutor(executor);
 
-		            value = config.getInitParameter("maxConnections");
-		            if (value == null)
-		                value = "256";
-		            client.setMaxConnectionsPerDestination(Integer.parseInt(value));
+					value = config.getInitParameter("maxConnections");
+					if (value == null)
+						value = "256";
+					client.setMaxConnectionsPerDestination(Integer.parseInt(value));
 
-		            value = config.getInitParameter("idleTimeout");
-		            if (value == null)
-		                value = "30000";
-		            client.setIdleTimeout(Long.parseLong(value));
+					value = config.getInitParameter("idleTimeout");
+					if (value == null)
+						value = "30000";
+					client.setIdleTimeout(Long.parseLong(value));
 
-		            value = config.getInitParameter("timeout");
-		            if (value == null)
-		                value = "60000";
-		            this.setTimeout(Long.parseLong(value));
+					value = config.getInitParameter("timeout");
+					if (value == null)
+						value = "60000";
+					this.setTimeout(Long.parseLong(value));
 
-		            value = config.getInitParameter("requestBufferSize");
-		            if (value != null)
-		                client.setRequestBufferSize(Integer.parseInt(value));
+					value = config.getInitParameter("requestBufferSize");
+					if (value != null)
+						client.setRequestBufferSize(Integer.parseInt(value));
 
-		            value = config.getInitParameter("responseBufferSize");
-		            if (value != null)
-		                client.setResponseBufferSize(Integer.parseInt(value));
-		            
-		            try
-		            {
-		                client.start();
+					value = config.getInitParameter("responseBufferSize");
+					if (value != null)
+						client.setResponseBufferSize(Integer.parseInt(value));
 
-		                // Content must not be decoded, otherwise the client gets confused
-		                client.getContentDecoderFactories().clear();
+					try
+					{
+						client.start();
 
-		                return client;
-		            }
-		            catch (Exception x)
-		            {
-		                throw new ServletException(x);
-		            }
-					
+						// Content must not be decoded, otherwise the client gets confused
+						client.getContentDecoderFactories().clear();
+
+						return client;
+					}
+					catch (Exception x)
+					{
+						throw new ServletException(x);
+					}
+
 				}
-				
-			    @Override
-			    protected URI rewriteURI(HttpServletRequest request) {
-			    	return URI.create(this.targetUrl + request.getRequestURI());
-			    }
+
+				@Override
+				protected URI rewriteURI(HttpServletRequest request) {
+					return URI.create(this.targetUrl + request.getRequestURI());
+				}
 			}.setTargetUrl(argTargetUrl)), "/*");
 
-	        server.start();
-	        server.join();
+			server.start();
+			server.join();
 		} catch(Exception e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
